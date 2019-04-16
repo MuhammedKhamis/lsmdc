@@ -403,9 +403,7 @@ class RETTrainer(object):
         margin_mat = np.zeros([dataset_length, dataset_length])
         for i in range(iter_num):
             for j in range(iter_num):
-                print("Before evaluation single step ")
                 loss, logit, output_score  = self.eval_single_step(queue)
-                print("After evaluation single step ")
                 margin_mat[i*batch_size:(i+1)*batch_size, j*batch_size:(j+1)*batch_size] = output_score
                 if i%5 == 0 and j%5 == 0:
                     ii = int(i/5)
