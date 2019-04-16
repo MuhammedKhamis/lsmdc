@@ -395,12 +395,12 @@ class RETTrainer(object):
     def evaluate(self, queue, dataset, global_step=None, generate_results=False, tag=''):
         log.info("Evaluate Phase")
         batch_size = self.model.batch_size
-        iter_num = int(1000/batch_size)
-
+        dataset_length = len(dataset)
+        iter_num = int(dataset_length/batch_size)
         results = []
-        iter_length = int(len(dataset) / self.model.batch_size + 1)
+        iter_length = int(dataset_length / self.model.batch_size + 1)
         scores = []
-        margin_mat = np.zeros([1000,1000])
+        margin_mat = np.zeros([dataset_length, dataset_length])
         for i in range(iter_num):
             for j in range(iter_num):
                 loss, logit, output_score  = self.eval_single_step(queue)
@@ -412,7 +412,7 @@ class RETTrainer(object):
                 log.infov("{}/{}, margin-loss: {}".format(i, iter_length, loss))
         acc = np.mean(np.diagonal(margin_mat))
         rank_list = []
-        for i in range(1000):
+        for i in range(dataset_length):
             col = -margin_mat[i,:]
             order = col.argsort()
             ranks = order.argsort()

@@ -83,7 +83,7 @@ class DatasetLSMDC():
             if self.layer.lower() == 'pool5':
                 if self.wav_data:
                     feature_file = os.path.join(VIDEO_FEATURE_DIR, self.image_feature_net.upper()
-                                            + "_" + self.layer.lower() + "wav.hdf5")
+                                            + "_" + self.layer.lower() + "wa    v.hdf5")
                 else:
                     feature_file = os.path.join(VIDEO_FEATURE_DIR, self.image_feature_net.upper()
                                             + "_" + self.layer.lower() + ".hdf5")
@@ -136,7 +136,8 @@ class DatasetLSMDC():
             data_df = pd.read_csv(blind_data_path, sep=separation)
 
         data_df = data_df.set_index('key')
-        print ("Data Number : ",len(data_df))
+        data_length = len(data_df)
+        print ("Data Number : ", data_length)
         data_df['row_index'] = range(1, len(data_df)+1)
 
         return data_df
@@ -603,8 +604,8 @@ class DatasetLSMDC():
     def batch_tile(self, num_epochs, batch_size, neg=True):
         keys = self.ids
         for epoch in xrange(num_epochs):
-            for i in range(int(1000/batch_size)):
-                for j in range(int(1000/batch_size)):
+            for i in range(int(self.__len__() / batch_size)):
+                for j in range(int(self.__len__() / batch_size)):
                     y_keys = keys[i*batch_size: (i+1)*batch_size]
                     x_keys = keys[j*batch_size: (j+1)*batch_size]
                     yield self.next_tile(batch_size, y_keys, x_keys)
