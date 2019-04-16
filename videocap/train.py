@@ -77,7 +77,7 @@ def main(argv):
     train_iter = train_dataset.batch_iter(train_config.num_epochs, model_config.batch_size)
     train_queue = BatchQueue(train_iter, name='train')
     if train_config.train_tag == 'RET':
-        val_queue = BatchQueue(validation_dataset.batch_tile(20*train_config.num_epochs, model_config.batch_size))
+        val_queue = BatchQueue(validation_dataset.batch_tile(20*train_config.num_epochs, model_config.batch_size), name='validation')
     else:
         val_iter = validation_dataset.batch_iter(20*train_config.num_epochs, model_config.batch_size, shuffle=False)
         val_queue = BatchQueue(val_iter, name='validation')
@@ -110,9 +110,11 @@ def main(argv):
         else:
             session.run(tf.global_variables_initializer())
         for step in range(train_config.max_steps):
+            print("Before Run single step = " , step)
             step_result = trainer.run_single_step(
                  queue=train_queue, is_train=True)
 
+            print("After Run single step = " , step)
             if step_result['current_step'] % train_config.steps_per_logging == 0:
                 step_result['steps_in_epoch'] = steps_in_epoch
                 trainer.log_step_message(**step_result)
