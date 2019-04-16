@@ -48,7 +48,7 @@ class DatasetLSMDC():
                  max_vid_length=40,
                  max_n_videos=None,
                  attr_length=20,
-                 wav_data = True,
+                 wav_data = False,
                  more_data=True,
                  data_type=None):
         self.dataset_name = dataset_name
