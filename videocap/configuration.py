@@ -34,7 +34,7 @@ class ModelConfig(object):
         self.loss_weight = 0.1
 
 
-        self.wav_data = True
+        self.wav_data = False
 
 
 class TrainConfig(object):
