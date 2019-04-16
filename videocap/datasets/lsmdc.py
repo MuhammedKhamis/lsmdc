@@ -104,34 +104,36 @@ class DatasetLSMDC():
         assert self.data_type in ['CAP', 'FIB', 'MC', 'RET'], 'Should choose data type in [CAP, FIB, MC]'
 
         train_data_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_'+self.data_type+'_train.csv')
-        train_cap_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_CAP_train.csv')
+        #train_cap_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_CAP_train.csv')
         val_data_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_'+self.data_type+'_val.csv')
-        val_cap_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_CAP_val.csv')
-        test_data_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_'+self.data_type+'_test.csv')
-        test_cap_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_CAP_test.csv')
-        blind_data_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_'+self.data_type+'_blindtest.csv')
-        par_cap_path = os.path.join(DATAFRAME_DIR, 'Paraphrase_CAP_train.csv')
+        #val_cap_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_CAP_val.csv')
+        #test_data_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_'+self.data_type+'_test.csv')
+        #test_cap_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_CAP_test.csv')
+        #blind_data_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_'+self.data_type+'_blindtest.csv')
+        #par_cap_path = os.path.join(DATAFRAME_DIR, 'Paraphrase_CAP_train.csv')
 
-        train_cap_df = pd.read_csv(train_cap_path, sep='\t')
-        val_cap_df = pd.read_csv(val_cap_path, sep='\t')
-        test_cap_df = pd.read_csv(test_cap_path, sep='\t')
-        par_cap_df = pd.read_csv(par_cap_path, sep='\t')
+        separation = ','
+
+        #train_cap_df = pd.read_csv(train_cap_path, sep=separation)
+        #val_cap_df = pd.read_csv(val_cap_path, sep=separation)
+        #test_cap_df = pd.read_csv(test_cap_path, sep=separation)
+        #par_cap_df = pd.read_csv(par_cap_path, sep=separation)
         if self.dataset_name == 'train':
             if self.data_type in ['MC']:
                 train_data_path = train_cap_path
-            data_df = pd.read_csv(train_data_path, sep='\t')
+            data_df = pd.read_csv(train_data_path, sep=separation)
             if self.more_data == True:
                 if self.data_type == 'FIB':
-                    val_fib_df = pd.read_csv(val_data_path, sep='\t')
+                    val_fib_df = pd.read_csv(val_data_path, sep=separation)
                     data_df = pd.concat([data_df,val_fib_df])
                 if self.data_type in ['MC','CAP']:
-                    val_cap_df = pd.read_csv(val_cap_path, sep='\t')
+                    val_cap_df = pd.read_csv(val_cap_path, sep=separation)
         elif self.dataset_name == 'validation':
-            data_df = pd.read_csv(val_data_path, sep='\t')
+            data_df = pd.read_csv(val_data_path, sep=separation)
         elif self.dataset_name == 'test':
-            data_df = pd.read_csv(test_data_path, sep='\t')
+            data_df = pd.read_csv(test_data_path, sep=separation)
         elif self.dataset_name == 'blind':
-            data_df = pd.read_csv(blind_data_path, sep='\t')
+            data_df = pd.read_csv(blind_data_path, sep=separation)
 
         data_df = data_df.set_index('key')
         print ("Data Number : ",len(data_df))
@@ -606,5 +608,3 @@ class DatasetLSMDC():
                     y_keys = keys[i*batch_size: (i+1)*batch_size]
                     x_keys = keys[j*batch_size: (j+1)*batch_size]
                     yield self.next_tile(batch_size, y_keys, x_keys)
-
-

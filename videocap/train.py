@@ -61,7 +61,7 @@ def main(argv):
                                  data_type=train_config.train_tag,
                                  attr_length=model_config.attr_length,
                                  wav_data = model_config.wav_data)
-    validation_dataset = DatasetLSMDC(dataset_name='test',
+    validation_dataset = DatasetLSMDC(dataset_name='validation',
                                       image_feature_net=model_config.image_feature_net,
                                       layer=model_config.layer,
                                       max_length=model_config.caption_length,
@@ -80,7 +80,7 @@ def main(argv):
         val_queue = BatchQueue(validation_dataset.batch_tile(20*train_config.num_epochs, model_config.batch_size))
     else:
         val_iter = validation_dataset.batch_iter(20*train_config.num_epochs, model_config.batch_size, shuffle=False)
-        val_queue = BatchQueue(val_iter, name='test')
+        val_queue = BatchQueue(val_iter, name='validation')
     train_queue.start_threads()
     val_queue.start_threads()
 

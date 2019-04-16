@@ -55,5 +55,5 @@ class TrainConfig(object):
         self.steps_per_evaluate = 5000
         self.train_tag = 'RET'
 
-        self.load_from_ckpt = None
+        self.load_from_ckpt = '/content/checkpoint/retmodel.ckpt'
         self.print_evaluate = False
