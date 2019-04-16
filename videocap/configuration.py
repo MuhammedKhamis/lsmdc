@@ -11,7 +11,7 @@ LSMDC_DATA_PATH = os.path.normpath(os.path.join(__path__, "../dataset/LSMDC"))
 class ModelConfig(object):
 
     def __init__(self):
-        self.batch_size = 32
+        self.batch_size = 16
         self.ret_batch_size = 10
 
         self.video_height = 299
