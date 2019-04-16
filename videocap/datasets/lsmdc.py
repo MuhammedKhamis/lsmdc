@@ -83,7 +83,7 @@ class DatasetLSMDC():
             if self.layer.lower() == 'pool5':
                 if self.wav_data:
                     feature_file = os.path.join(VIDEO_FEATURE_DIR, self.image_feature_net.upper()
-                                            + "_" + self.layer.lower() + "wa    v.hdf5")
+                                            + "_" + self.layer.lower() + "wav.hdf5")
                 else:
                     feature_file = os.path.join(VIDEO_FEATURE_DIR, self.image_feature_net.upper()
                                             + "_" + self.layer.lower() + ".hdf5")
