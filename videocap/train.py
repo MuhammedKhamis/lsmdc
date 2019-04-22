@@ -110,11 +110,12 @@ def main(argv):
         else:
             session.run(tf.global_variables_initializer())
         for step in range(train_config.max_steps):
-            print("Before Run single step = " , step)
+            if step % 1000 == 0:
+                print("Before Run single step = " , step)
             step_result = trainer.run_single_step(
                  queue=train_queue, is_train=True)
-
-            print("After Run single step = " , step)
+            if step % 1000 == 0:
+                print("After Run single step = " , step)
             if step_result['current_step'] % train_config.steps_per_logging == 0:
                 step_result['steps_in_epoch'] = steps_in_epoch
                 trainer.log_step_message(**step_result)
