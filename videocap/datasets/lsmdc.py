@@ -221,7 +221,7 @@ class DatasetLSMDC():
     def load_video_feature(self, key):
         video_id = str(self.data_df.loc[key, 'vid_key'])
 
-        if video_id[:3] == 'vid':
+        if video_id[:5] == 'video':
             video_feature = np.array(self.feat_h5[video_id])
         elif video_id[:3] == 'msr':
             video_feature = np.array(self.msr_h5[video_id])
