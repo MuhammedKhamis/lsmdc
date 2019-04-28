@@ -121,19 +121,19 @@ class DatasetLSMDC():
         if self.dataset_name == 'train':
             if self.data_type in ['MC']:
                 train_data_path = train_cap_path
-            data_df = pd.read_csv(train_data_path, sep=separation)
+            data_df = pd.read_csv(train_data_path, sep=separation, index_col=0)
             if self.more_data == True:
                 if self.data_type == 'FIB':
-                    val_fib_df = pd.read_csv(val_data_path, sep=separation)
+                    val_fib_df = pd.read_csv(val_data_path, sep=separation, index_col=0)
                     data_df = pd.concat([data_df,val_fib_df])
                 if self.data_type in ['MC','CAP']:
-                    val_cap_df = pd.read_csv(val_cap_path, sep=separation)
+                    val_cap_df = pd.read_csv(val_cap_path, sep=separation, index_col=0)
         elif self.dataset_name == 'validation':
-            data_df = pd.read_csv(val_data_path, sep=separation)
+            data_df = pd.read_csv(val_data_path, sep=separation, index_col=0)
         elif self.dataset_name == 'test':
-            data_df = pd.read_csv(test_data_path, sep=separation)
+            data_df = pd.read_csv(test_data_path, sep=separation, index_col=0)
         elif self.dataset_name == 'blind':
-            data_df = pd.read_csv(blind_data_path, sep=separation)
+            data_df = pd.read_csv(blind_data_path, sep=separation, index_col=0)
 
         data_df = data_df.set_index('key')
         data_length = len(data_df)
@@ -220,6 +220,8 @@ class DatasetLSMDC():
 
     def load_video_feature(self, key):
         video_id = str(self.data_df.loc[key, 'vid_key'])
+
+        print video_id
 
         if video_id[:5] == 'video':
             video_feature = np.array(self.feat_h5[video_id])
