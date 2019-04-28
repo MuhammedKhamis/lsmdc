@@ -12,7 +12,7 @@ class ModelConfig(object):
 
     def __init__(self):
         self.batch_size = 16
-        self.ret_batch_size = 16
+        self.ret_batch_size = 10
 
         self.video_height = 299
         self.video_width = 299
