@@ -219,7 +219,10 @@ class DatasetLSMDC():
             yield key
 
     def load_video_feature(self, key):
-        video_id = str(self.data_df.iloc[key]['vid_key'])
+
+        print("0000000000000000000000000000000000000000000000000000000" , key)
+
+        video_id = str(self.data_df.loc[key]['vid_key'])
 
         if video_id[:5] == 'video':
             video_feature = np.array(self.feat_h5[video_id])
@@ -280,15 +283,15 @@ class DatasetLSMDC():
         '''
         Return caption string for given key.
         '''
-        description = self.data_df.iloc[key]['description']
+        description = self.data_df.loc[key]['description']
         return self.convert_sentence_to_matrix(description)
 
     def get_sentence(self, key):
-        sentence = self.data_df.iloc[key][ 'sentence']
+        sentence = self.data_df.loc[key][ 'sentence']
         return self.convert_sentence_to_matrix(sentence)
 
     def get_blank_sentence(self, key):
-        blank_sentence = self.data_df.iloc[key][ 'blank_sentence']
+        blank_sentence = self.data_df.loc[key][ 'blank_sentence']
         clean_blank_sent = data_util.clean_blank(blank_sentence)
         sent2indices = [self.word2idx[w] for w in
                         clean_blank_sent
@@ -298,7 +301,7 @@ class DatasetLSMDC():
         return sent2indices[:length]
 
     def get_blank_answer(self, key):
-        answer = self.data_df.iloc[key][ 'answer']
+        answer = self.data_df.loc[key][ 'answer']
         answer_idx = self.word2idx[data_util.clean_str(answer).split()[0]]
         voc_size = self.word_matrix.shape[0]
         onehot_answer = np.zeros(voc_size)
@@ -327,21 +330,21 @@ class DatasetLSMDC():
 
     def get_MC_dict(self, key):
         if self.dataset_name == 'train':
-            a1 = self.data_df.iloc[key][ 'description']
+            a1 = self.data_df.loc[key][ 'description']
             keys = np.random.choice(self.ids, 4, replace=False)
-            a2 = self.data_df.iloc[keys[0]]['description']
-            a3 = self.data_df.iloc[keys[1]]['description']
-            a4 = self.data_df.iloc[keys[2]]['description']
-            a5 = self.data_df.iloc[keys[3]]['description']
+            a2 = self.data_df.loc[keys[0]]['description']
+            a3 = self.data_df.loc[keys[1]]['description']
+            a4 = self.data_df.loc[keys[2]]['description']
+            a5 = self.data_df.loc[keys[3]]['description']
             answer = 0
         else:
-            a1 = self.data_df.iloc[key][ 'a1']
-            a2 = self.data_df.iloc[key][ 'a2']
-            a3 = self.data_df.iloc[key][ 'a3']
-            a4 = self.data_df.iloc[key][ 'a4']
-            a5 = self.data_df.iloc[key][ 'a5']
-            answer = self.data_df.iloc[key][ 'answer']
-        row_index = self.data_df.iloc[key][ 'row_index']
+            a1 = self.data_df.loc[key][ 'a1']
+            a2 = self.data_df.loc[key][ 'a2']
+            a3 = self.data_df.loc[key][ 'a3']
+            a4 = self.data_df.loc[key][ 'a4']
+            a5 = self.data_df.loc[key][ 'a5']
+            answer = self.data_df.loc[key][ 'answer']
+        row_index = self.data_df.loc[key][ 'row_index']
 
         # as list of sentence strings
         candidates = [a1, a2, a3, a4, a5]
@@ -418,7 +421,7 @@ class DatasetLSMDC():
                     sys.exit()
                 batch_caption[k, :len(caption)] = caption
                 batch_caption_mask[k] = caption_mask
-                batch_debug_sent[k] = self.data_df.iloc[key]['description']
+                batch_debug_sent[k] = self.data_df.loc[key]['description']
 
         ret = {
             'ids': chunk,
@@ -463,7 +466,7 @@ class DatasetLSMDC():
             batch_blank_sent_mask[k] = blank_sent_mask
             batch_reverse_blank_sent_mask[k] = reverse_blank_sent_mask
 
-            batch_debug_sent[k] = self.data_df.iloc[key]['sentence']
+            batch_debug_sent[k] = self.data_df.loc[key]['sentence']
 
         ret = {
             'ids': chunk,
@@ -558,7 +561,7 @@ class DatasetLSMDC():
             batch_video_mask[k] = video_mask
             batch_caption_mask[k] = caption_mask
 
-            batch_debug_sent[k] = self.data_df.iloc[x_key]['description']
+            batch_debug_sent[k] = self.data_df.loc[x_key]['description']
 
         ret = {
             'ids': y_key,
