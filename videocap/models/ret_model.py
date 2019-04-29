@@ -399,6 +399,9 @@ class RETTrainer(object):
         iter_length = int(dataset_length / self.model.batch_size + 1)
         scores = []
         margin_mat = np.zeros([dataset_length, dataset_length])
+
+        print('Iteration number  ', iter_num)
+
         for i in range(iter_num):
             for j in range(iter_num):
                 loss, logit, output_score  = self.eval_single_step(queue)
