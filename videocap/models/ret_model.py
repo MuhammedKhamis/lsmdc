@@ -377,7 +377,7 @@ class RETTrainer(object):
     def log_step_message(self, current_step, loss, concept_loss, step_time, steps_in_epoch, is_train=True):
         log_fn = (is_train and log.info or log.infov)
         batch_size = self.model.batch_size
-        log_fn((" [{split_mode:5} step {step:4d} / epoch {epoch:.2f}]  " +
+        msg = (" [{split_mode:5} step {step:4d} / epoch {epoch:.2f}]  " +
                 "batch total-loss: {total_loss:.5f}, concept-loss: {concept_loss:.5f}" +
                 "({sec_per_batch:.3f} sec/batch, {instance_per_sec:.3f} instances/sec) | {train_tag}"
                 ).format(split_mode=(is_train and 'train' or 'val'),
@@ -388,7 +388,7 @@ class RETTrainer(object):
                          instance_per_sec=batch_size / step_time,
                          train_tag=self.config.train_tag,
                          )
-               )
+        log_fn(msg)
 
     def evaluate(self, queue, dataset, global_step=None, generate_results=False, tag=''):
         log.info("Evaluate Phase")
@@ -422,10 +422,10 @@ class RETTrainer(object):
         c5 = [x for x in rank_list if x < 5]
         c10 = [x for x in rank_list if x< 10]
         medr = np.median(rank_list)
-        log.infov("[RET] R@1: {}, R@5: {}, R@10: {}, medr : {medr:.4f}".format(len(c), len(c5),
+        log.infov("[RET] R@1: {}, R@5: {}, R@10: {}, medr: {medr:.4f}".format(len(c), len(c5),
             len(c10),medr = medr))
         log.infov("[RET] total accuracy: {acc:.5f}".format(acc=np.sum(acc)))
 
         if generate_results:
             with open('./checkpoint/evaluate_log.tsv', 'a') as f:
-                f.write('[{}]\t{}\t{}\t{}\t{}\t{}\n'.format(global_step, len(c), len(c5), len(c10), medr, np.sum(acc)))
+                f.write('[RET] Step [{}]\t, R@1: {}\t, R@5: {}\t, R@10: {}\t, medr: {}\t, acc: {}\n'.format(global_step, len(c), len(c5), len(c10), medr, np.sum(acc)))
