@@ -51,8 +51,8 @@ class TrainConfig(object):
         self.optimizer = 'Adam'
         self.max_grad_norm = 5.0
 
-        self.steps_per_logging = 50
-        self.steps_per_evaluate = 100
+        self.steps_per_logging = 500
+        self.steps_per_evaluate = 1000
         self.train_tag = 'RET'
 
         self.load_from_ckpt = '/content/checkpoint/retmodel.ckpt'
