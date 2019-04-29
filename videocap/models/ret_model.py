@@ -364,18 +364,14 @@ class RETTrainer(object):
         return result
 
     def eval_single_step(self, val_queue):
-        print('get the batch chunck')
         batch_chunk = val_queue.get_inputs()
-        print('finished getting the batch chunk')
         feed_dict = self.model.get_feed_dict(batch_chunk)
         feed_dict[self.model.train_flag] = False
         feed_dict[self.model.dropout_keep_prob] = 1.0
-        print('started the session')
         loss,output_score, logit = self.sess.run([self.model.mean_loss,
                                                                self.model.scores,
                                                                self.model.logit],
                                                                feed_dict=feed_dict)
-        print('ended the session')
         return [loss, output_score, logit]
 
     def log_step_message(self, current_step, loss, concept_loss, step_time, steps_in_epoch, is_train=True):
@@ -405,9 +401,7 @@ class RETTrainer(object):
         margin_mat = np.zeros([dataset_length, dataset_length])
         for i in range(iter_num):
             for j in range(iter_num):
-                print('Started in the evaluation step inside evaluate function')
                 loss, logit, output_score  = self.eval_single_step(queue)
-                print('Finished evaluation step inside evaluate function')
                 margin_mat[i*batch_size:(i+1)*batch_size, j*batch_size:(j+1)*batch_size] = output_score
                 if i%5 == 0 and j%5 == 0:
                     ii = int(i/5)
