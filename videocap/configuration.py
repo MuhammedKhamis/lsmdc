@@ -42,7 +42,7 @@ class TrainConfig(object):
     def __init__(self):
         self.learning_rate = 0.0001
         self.train_dir = None
-        self.max_steps = 10000
+        self.max_steps = 100000
 
         self.num_epochs = 10
 
@@ -51,8 +51,8 @@ class TrainConfig(object):
         self.optimizer = 'Adam'
         self.max_grad_norm = 5.0
 
-        self.steps_per_logging = 500
-        self.steps_per_evaluate = 1000
+        self.steps_per_logging = 5000
+        self.steps_per_evaluate = 10000
         self.train_tag = 'RET'
 
         self.load_from_ckpt = '/content/checkpoint/retmodel.ckpt'
