@@ -46,7 +46,8 @@ def main(argv):
     model_config = ModelConfig()
     train_config = TrainConfig()
 
-    base_dir =  os.path.join("checkpoint",train_config.train_tag+"_"+FLAGS.tag)
+    drive_dir = '/content/drive/My Drive/Graduation Project/Output/checkpoint_lsmdc/'
+    base_dir =  os.path.join(drive_dir, train_config.train_tag + "_" + FLAGS.tag)
     checkpoint_dir = os.path.join(base_dir,"model.ckpt")
     logits_dir = os.path.join(base_dir,"logits_")
     if not os.path.exists(base_dir):
