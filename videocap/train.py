@@ -120,15 +120,17 @@ def main(argv):
             step_result = trainer.run_single_step(skip, queue=train_queue, is_train=True)
             if step % 1000 == 0:
                 print("After Run single step = " , step)
-            if step_result['current_step'] % train_config.steps_per_logging == 0:
-                step_result['steps_in_epoch'] = steps_in_epoch
-                trainer.log_step_message(**step_result)
+            
+            if skip:
+                if step_result['current_step'] % train_config.steps_per_logging == 0:
+                    step_result['steps_in_epoch'] = steps_in_epoch
+                    trainer.log_step_message(**step_result)
 
-            if step_result['current_step'] % train_config.steps_per_evaluate == 0 or train_config.print_evaluate:
-                trainer.evaluate(queue=val_queue, dataset=validation_dataset, global_step=step, generate_results=True, tag=FLAGS.tag)
+                if step_result['current_step'] % train_config.steps_per_evaluate == 0 or train_config.print_evaluate:
+                    trainer.evaluate(queue=val_queue, dataset=validation_dataset, global_step=step, generate_results=True, tag=FLAGS.tag)
 
-                print("SAVE MODEL"+FLAGS.tag)
-                saver.save(session, checkpoint_dir, global_step=step)
+                    print("SAVE MODEL"+FLAGS.tag)
+                    saver.save(session, checkpoint_dir, global_step=step)
 
         train_queue.thread_close()
         val_queue.thread_close()
