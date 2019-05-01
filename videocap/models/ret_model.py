@@ -339,7 +339,7 @@ class RETTrainer(object):
         if train_summary_dir is not None:
             self.train_summary_writer = tf.summary.FileWriter(train_summary_dir, sess.graph_def)
 
-    def run_single_step(self, queue, is_train=True):
+    def run_single_step(self, skip, queue, is_train=True):
         start_ts = time.time()
 
         step_op = self.train_op if is_train else self.no_op
@@ -347,13 +347,15 @@ class RETTrainer(object):
         feed_dict = self.model.get_feed_dict(batch_chunk)
         feed_dict[self.model.train_flag] = is_train
         if not is_train: feed_dict[self.model.dropout_keep_prob] = 1.0
-
-        _, loss,concept_loss, current_step, summary = self.sess.run(
-            [step_op, self.model.mean_loss, self.model.concept_loss, self.global_step,
-             self.summary_mean_loss],
-            feed_dict=feed_dict)
-        if self.train_summary_writer is not None:
-            self.train_summary_writer.add_summary(summary, current_step)
+        
+        if not skip:
+            _, loss,concept_loss, current_step, summary = self.sess.run(
+                [step_op, self.model.mean_loss, self.model.concept_loss, self.global_step,
+                self.summary_mean_loss],
+                feed_dict=feed_dict)
+            if self.train_summary_writer is not None:
+                self.train_summary_writer.add_summary(summary, current_step)
+            
         end_ts = time.time()
         result = {
             "loss": loss,

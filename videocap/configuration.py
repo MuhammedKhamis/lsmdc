@@ -43,7 +43,7 @@ class TrainConfig(object):
         self.learning_rate = 0.0001
         self.train_dir = None
         self.max_steps = 100000
-
+        self.last_step_taken = 30000
         self.num_epochs = 10
 
         self.learning_rate_decay_steps = 100000

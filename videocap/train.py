@@ -111,10 +111,13 @@ def main(argv):
         else:
             session.run(tf.global_variables_initializer())
         for step in range(train_config.max_steps):
+            skip = False
+            if step <= train_config.last_step_taken :
+                skip = True
+
             if step % 1000 == 0:
                 print("Before Run single step = " , step)
-            step_result = trainer.run_single_step(
-                 queue=train_queue, is_train=True)
+            step_result = trainer.run_single_step(skip, queue=train_queue, is_train=True)
             if step % 1000 == 0:
                 print("After Run single step = " , step)
             if step_result['current_step'] % train_config.steps_per_logging == 0:
