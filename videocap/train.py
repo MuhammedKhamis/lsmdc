@@ -121,7 +121,7 @@ def main(argv):
             if step % 1000 == 0:
                 print("After Run single step = " , step)
             
-            if skip:
+            if not skip:
                 if step_result['current_step'] % train_config.steps_per_logging == 0:
                     step_result['steps_in_epoch'] = steps_in_epoch
                     trainer.log_step_message(**step_result)
