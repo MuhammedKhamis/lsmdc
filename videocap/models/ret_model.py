@@ -348,6 +348,10 @@ class RETTrainer(object):
         feed_dict[self.model.train_flag] = is_train
         if not is_train: feed_dict[self.model.dropout_keep_prob] = 1.0
         
+        loss = None
+        concept_loss = None
+        current_step = None
+        
         if not skip:
             _, loss,concept_loss, current_step, summary = self.sess.run(
                 [step_op, self.model.mean_loss, self.model.concept_loss, self.global_step,
@@ -355,6 +359,7 @@ class RETTrainer(object):
                 feed_dict=feed_dict)
             if self.train_summary_writer is not None:
                 self.train_summary_writer.add_summary(summary, current_step)
+            
             
         end_ts = time.time()
         result = {
