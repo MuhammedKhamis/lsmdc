@@ -79,6 +79,13 @@ class DatasetLSMDC():
         return len(self.data_df)
 
     def read_feat_from_hdf5(self):
+
+        if self.dataset_name == 'test':
+            # load test hdf5
+            feature_file = os.path.join(VIDEO_FEATURE_DIR, self.image_feature_net.upper()
+                                            + "_" + self.layer.lower() + "test.hdf5")
+            return h5py.File(feature_file, 'r')
+
         if self.image_feature_net.lower() == 'resnet':
             if self.layer.lower() == 'pool5':
                 if self.wav_data:
@@ -107,7 +114,7 @@ class DatasetLSMDC():
         #train_cap_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_CAP_train.csv')
         val_data_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_'+self.data_type+'_val.csv')
         #val_cap_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_CAP_val.csv')
-        #test_data_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_'+self.data_type+'_test.csv')
+        test_data_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_'+self.data_type+'_test.csv')
         #test_cap_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_CAP_test.csv')
         #blind_data_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_'+self.data_type+'_blindtest.csv')
         #par_cap_path = os.path.join(DATAFRAME_DIR, 'Paraphrase_CAP_train.csv')
