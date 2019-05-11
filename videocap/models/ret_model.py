@@ -400,6 +400,7 @@ class RETTrainer(object):
     def evaluate(self, queue, dataset, global_step=None, generate_results=False, tag=''):
         log.info("Evaluate Phase")
         batch_size = self.model.batch_size
+        # dataset = CSV caption file
         dataset_length = len(dataset)
         iter_num = int(dataset_length/batch_size)
         results = []
@@ -436,3 +437,33 @@ class RETTrainer(object):
         if generate_results:
             with open('./checkpoint/evaluate_log.tsv', 'a') as f:
                 f.write('[RET] Step [{}]\t, R@1: {}\t, R@5: {}\t, R@10: {}\t, medr: {}\t, acc: {}\n'.format(global_step, len(c), len(c5), len(c10), medr, np.sum(acc)))
+
+
+    def test_single_step(self, test_queue):
+        batch_chunk = test_queue.get_inputs()
+        feed_dict = self.model.get_feed_dict(batch_chunk)
+        feed_dict[self.model.train_flag] = False
+        feed_dict[self.model.dropout_keep_prob] = 1.0
+        loss,output_score, logit = self.sess.run([self.model.mean_loss,
+                                                               self.model.scores,
+                                                               self.model.logit],
+                                                               feed_dict=feed_dict)
+        return [loss, output_score, logit]
+
+    def test(self, queue, dataset):
+        log.info("Starting Test Phase")
+        batch_size = 1
+        # dataset = CSV caption file
+        dataset_length = len(dataset)
+        iter_num = int(dataset_length/batch_size)
+        results = []
+        scores = []
+        margin_mat = np.zeros([dataset_length, dataset_length])
+
+        for i in range(iter_num):
+            for j in range(iter_num):
+                loss, logit, output_score  = self.test_single_step(queue)
+                margin_mat[i*batch_size:(i+1)*batch_size, j*batch_size:(j+1)*batch_size] = output_score
+    
+        scores = margin_mat[0:1]
+        print(scores)

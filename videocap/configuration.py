@@ -57,3 +57,4 @@ class TrainConfig(object):
 
         self.load_from_ckpt = '/content/checkpoint/retmodel.ckpt'
         self.print_evaluate = False
+        self.test_flag = True
