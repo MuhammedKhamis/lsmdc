@@ -92,7 +92,7 @@ def main(argv):
     train_queue = BatchQueue(train_iter, name='train')
     if train_config.train_tag == 'RET':
         val_queue = BatchQueue(validation_dataset.batch_tile(20*train_config.num_epochs, model_config.batch_size), name='validation')
-        test_queue = BatchQueue(test_dataset.batch_tile(1, 1), name='test')
+        test_queue = BatchQueue(test_dataset.batch_tile(1, model_config.batch_size), name='test')
     else:
         val_iter = validation_dataset.batch_iter(20*train_config.num_epochs, model_config.batch_size, shuffle=False)
         val_queue = BatchQueue(val_iter, name='validation')
