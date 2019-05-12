@@ -465,5 +465,5 @@ class RETTrainer(object):
                 loss, output_score, logit  = self.test_single_step(queue)
                 margin_mat[i*batch_size:(i+1)*batch_size, j*batch_size:(j+1)*batch_size] = output_score
     
-        scores = margin_mat
+        scores = margin_mat[0,:]
         print(scores)
