@@ -150,9 +150,9 @@ def main(argv):
         else:
             trainer.test(queue=test_queue, dataset=test_dataset)
         
-        train_queue.thread_close()
-        val_queue.thread_close()
-        test_queue.thread_close()
+        #train_queue.thread_close()
+        #val_queue.thread_close()
+        #test_queue.thread_close()
 
 if __name__ == '__main__':
     tf.app.run(main=main)

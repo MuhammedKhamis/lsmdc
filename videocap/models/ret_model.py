@@ -412,7 +412,7 @@ class RETTrainer(object):
 
         for i in range(iter_num):
             for j in range(iter_num):
-                loss, logit, output_score  = self.eval_single_step(queue)
+                loss, output_score, logit = self.eval_single_step(queue)
                 margin_mat[i*batch_size:(i+1)*batch_size, j*batch_size:(j+1)*batch_size] = output_score
                 if i%5 == 0 and j%5 == 0:
                     ii = int(i/5)
@@ -462,7 +462,7 @@ class RETTrainer(object):
 
         for i in range(iter_num):
             for j in range(iter_num):
-                loss, logit, output_score  = self.test_single_step(queue)
+                loss, output_score, logit  = self.test_single_step(queue)
                 margin_mat[i*batch_size:(i+1)*batch_size, j*batch_size:(j+1)*batch_size] = output_score
     
         scores = margin_mat
