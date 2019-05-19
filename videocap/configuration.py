@@ -34,7 +34,7 @@ class ModelConfig(object):
         self.loss_weight = 0.1
 
 
-        self.wav_data = True
+        self.wav_data = False
 
 
 class TrainConfig(object):
@@ -42,19 +42,21 @@ class TrainConfig(object):
     def __init__(self):
         self.learning_rate = 0.0001
         self.train_dir = None
-        self.max_steps = 100000
-        self.last_step_taken = 30000
+        # as dataset is 26052 video caption pair
+        self.max_steps = 26052
+        self.last_step_taken = 0
         self.num_epochs = 10
 
-        self.learning_rate_decay_steps = 100000
+        self.learning_rate_decay_steps = 500000
         self.learning_rate_decay_factor = 0.5
         self.optimizer = 'Adam'
         self.max_grad_norm = 5.0
 
-        self.steps_per_logging = 5000
-        self.steps_per_evaluate = 10000
+        self.steps_per_logging = 1000
+        self.steps_per_evaluate = 5000
         self.train_tag = 'RET'
 
-        self.load_from_ckpt = '/content/checkpoint/retmodel.ckpt'
+        self.load_from_ckpt = '/content/checkpoint/RET_/Epoch3/model.ckpt-26051'
         self.print_evaluate = False
         self.test_flag = True
+

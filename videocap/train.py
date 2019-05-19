@@ -46,7 +46,7 @@ def main(argv):
     model_config = ModelConfig()
     train_config = TrainConfig()
 
-    drive_dir = '/content/drive/My Drive/Graduation Project/Output/checkpoint_lsmdc/'
+    drive_dir = '/content/drive/My Drive/Graduation Project/Output/checkpoint_lsmdc_InceptionResNet/'
     base_dir =  os.path.join(drive_dir, train_config.train_tag + "_" + FLAGS.tag)
     checkpoint_dir = os.path.join(base_dir,"model.ckpt")
     logits_dir = os.path.join(base_dir,"logits_")
@@ -92,7 +92,7 @@ def main(argv):
     train_queue = BatchQueue(train_iter, name='train')
     if train_config.train_tag == 'RET':
         val_queue = BatchQueue(validation_dataset.batch_tile(20*train_config.num_epochs, model_config.batch_size), name='validation')
-        test_queue = BatchQueue(test_dataset.batch_tile(1, 1), name='test')
+        test_queue = BatchQueue(test_dataset.batch_tile(1, model_config.batch_size), name='test')
     else:
         val_iter = validation_dataset.batch_iter(20*train_config.num_epochs, model_config.batch_size, shuffle=False)
         val_queue = BatchQueue(val_iter, name='validation')
@@ -148,11 +148,8 @@ def main(argv):
                         print("SAVE MODEL"+FLAGS.tag)
                         saver.save(session, checkpoint_dir, global_step=step)
         else:
+            #trainer.evaluate(queue=val_queue, dataset=validation_dataset, global_step=step, generate_results=True, tag=FLAGS.tag)
             trainer.test(queue=test_queue, dataset=test_dataset)
-        
-        train_queue.thread_close()
-        val_queue.thread_close()
-        test_queue.thread_close()
 
 if __name__ == '__main__':
     tf.app.run(main=main)

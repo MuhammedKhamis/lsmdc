@@ -44,7 +44,7 @@ class RETGenerator(object):
         if self.config.wav_data:
             self.channel_size = 2176
         else:
-            self.channel_size = 2048
+            self.channel_size = 1536
         self.global_step = tf.Variable(0, name="global_step", trainable=False, dtype=tf.int64)
 
     def get_feed_dict(self, batch_chunk):
@@ -400,7 +400,6 @@ class RETTrainer(object):
     def evaluate(self, queue, dataset, global_step=None, generate_results=False, tag=''):
         log.info("Evaluate Phase")
         batch_size = self.model.batch_size
-        # dataset = CSV caption file
         dataset_length = len(dataset)
         iter_num = int(dataset_length/batch_size)
         results = []
@@ -451,19 +450,38 @@ class RETTrainer(object):
         return [loss, output_score, logit]
 
     def test(self, queue, dataset):
-        log.info("Starting Test Phase")
-        batch_size = 1
-        # dataset = CSV caption file
+        log.info("Testing Phase")
+        batch_size = self.model.batch_size
         dataset_length = len(dataset)
         iter_num = int(dataset_length/batch_size)
         results = []
+        iter_length = int(dataset_length / self.model.batch_size + 1)
         scores = []
         margin_mat = np.zeros([dataset_length, dataset_length])
 
+        print('Testing on {} videos'.format(dataset_length))
+        
         for i in range(iter_num):
             for j in range(iter_num):
                 loss, logit, output_score  = self.test_single_step(queue)
                 margin_mat[i*batch_size:(i+1)*batch_size, j*batch_size:(j+1)*batch_size] = output_score
-    
-        scores = margin_mat[0:1]
-        print(scores)
+                if i%5 == 0 and j%5 == 0:
+                    ii = int(i/5)
+                    jj = int(j/5)
+            if i%10 == 0:
+                log.infov("{}/{}, margin-loss: {}".format(i, iter_length, loss))
+        acc = np.mean(np.diagonal(margin_mat))
+        rank_list = []
+        for i in range(dataset_length):
+            col = -margin_mat[i,:]
+            order = col.argsort()
+            ranks = order.argsort()
+            rank_list.append(ranks[i])
+        c = [x for x in rank_list if x < 1]
+        c5 = [x for x in rank_list if x < 5]
+        c10 = [x for x in rank_list if x< 10]
+        medr = np.median(rank_list)
+        log.infov("[RET] R@1: {}, R@5: {}, R@10: {}, medr: {medr:.4f}".format(len(c), len(c5),
+            len(c10),medr = medr))
+        log.infov("[RET] total accuracy: {acc:.5f}".format(acc=np.sum(acc)))
+        print('Finished Testing on {} videos'.format(dataset_length))
