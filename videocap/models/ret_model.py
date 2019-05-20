@@ -42,7 +42,7 @@ class RETGenerator(object):
             num_units=self.config.hidden_dim, state_is_tuple=True)
 
         if self.config.wav_data:
-            self.channel_size = 2176
+            self.channel_size = 4160
         else:
             self.channel_size = 1536
         self.global_step = tf.Variable(0, name="global_step", trainable=False, dtype=tf.int64)
@@ -460,16 +460,33 @@ class RETTrainer(object):
         margin_mat = np.zeros([dataset_length, dataset_length])
 
         print('Testing on {} videos'.format(dataset_length))
-        
+        # intitalize
+        c = []
+        c5 = []
+        c10 = []
         for i in range(iter_num):
             for j in range(iter_num):
                 loss, logit, output_score  = self.test_single_step(queue)
-                margin_mat[i*batch_size:(i+1)*batch_size, j*batch_size:(j+1)*batch_size] = output_score
+                margin_mat[i*batch_size:(i+1)*batch_size, j*batch_size:(j+1)*batch_size] = output_score  
                 if i%5 == 0 and j%5 == 0:
                     ii = int(i/5)
                     jj = int(j/5)
+            
+            # intermediate results
+            rank_list = []
+            for k in range(i*batch_size, (i+1)*batch_size):
+                col = -margin_mat[k,:]
+                order = col.argsort()
+                ranks = order.argsort()
+                rank_list.append(ranks[k])
+            c += [x for x in rank_list if x < 1]
+            c5 += [x for x in rank_list if x < 5]
+            c10 += [x for x in rank_list if x< 10]
+            log.infov("(i = {}) [RET] R@1: {}, R@5: {}, R@10: {} from {} finished from total {}".format(i, len(c), len(c5), len(c10), (i+1) * batch_size, dataset_length))                
+            
             if i%10 == 0:
                 log.infov("{}/{}, margin-loss: {}".format(i, iter_length, loss))
+
         acc = np.mean(np.diagonal(margin_mat))
         rank_list = []
         for i in range(dataset_length):

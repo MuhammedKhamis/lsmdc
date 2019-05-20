@@ -49,7 +49,7 @@ class DatasetLSMDC():
                  max_n_videos=None,
                  attr_length=20,
                  wav_data = True,
-                 more_data=True,
+                 more_data=False,
                  data_type=None):
         self.dataset_name = dataset_name
         self.image_feature_net = image_feature_net
@@ -84,9 +84,9 @@ class DatasetLSMDC():
             # load test hdf5
             feature_file = os.path.join(VIDEO_FEATURE_DIR, self.image_feature_net.upper()
                                             + "_" + self.layer.lower() + "test.hdf5")
-            return h5py.File(feature_file, 'r')
+           # return h5py.File(feature_file, 'r')
 
-        if self.image_feature_net.lower() == 'resnet':
+        elif self.image_feature_net.lower() == 'resnet':
             if self.layer.lower() == 'pool5':
                 if self.wav_data:
                     feature_file = os.path.join(VIDEO_FEATURE_DIR, self.image_feature_net.upper()
@@ -250,7 +250,7 @@ class DatasetLSMDC():
             assert self.layer.lower() in ['pool5']
             if self.layer.lower() == 'pool5':
                 if self.wav_data == True:
-                    return (self.max_vid_length, 1, 1, 2176)
+                    return (self.max_vid_length, 1, 1, 4160)
                 else:
                     return (self.max_vid_length, 1, 1, 1536)
         raise NotImplementedError()
