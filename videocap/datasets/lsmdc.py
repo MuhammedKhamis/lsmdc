@@ -61,14 +61,19 @@ class DatasetLSMDC():
         self.data_type = data_type
         self.wav_data = wav_data
         self.more_data = more_data
-        self.data_df = self.read_df_from_csvfile()
+       
 
-        if max_n_videos is not None:
-            self.data_df = self.data_df[:max_n_videos]
-        self.ids = list(self.data_df.index)
+        if dataset_name == 'test':
+            self.data_df = self.read_df_from_csvfile()
 
-        self.feat_h5 = self.read_feat_from_hdf5()
+            if max_n_videos is not None:
+                self.data_df = self.data_df[:max_n_videos]
+            self.ids = list(self.data_df.index)
 
+            self.feat_h5 = self.read_feat_from_hdf5()
+        else:
+            print('Skipped {}'.format(dataset_name))
+            
     def __del__(self):
         self.feat_h5.close()
 

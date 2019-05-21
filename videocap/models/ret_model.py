@@ -460,7 +460,6 @@ class RETTrainer(object):
         iter_length = int(dataset_length / self.model.batch_size + 1)
         scores = []
         margin_mat = np.zeros([dataset_length, dataset_length])
-        num_false_videos = 1000
 
         print('Testing on {} videos'.format(dataset_length))
         # intitalize
@@ -468,29 +467,12 @@ class RETTrainer(object):
         c5 = []
         c10 = []
         for i in range(iter_num):
-            # choose 1000 false caption to rank them with the chosen i video
-            chosen_false_indicies = np.random.randint(0, iter_num, size=num_false_videos / batch_size).tolist()
             for j in range(iter_num):
-                if j not in chosen_false_indicies:
-                    continue
                 loss, logit, output_score  = self.test_single_step(queue)
                 margin_mat[i*batch_size:(i+1)*batch_size, j*batch_size:(j+1)*batch_size] = output_score  
-            
-            # intermediate results
-            rank_list = []
-            for k in range(i*batch_size, (i+1)*batch_size):
-                col = -margin_mat[k,:]
-                order = col.argsort()
-                ranks = order.argsort()
-                rank_list.append(ranks[k])
-            c += [x for x in rank_list if x < 1]
-            c5 += [x for x in rank_list if x < 5]
-            c10 += [x for x in rank_list if x< 10]
-            log.infov("(i = {}) [RET] R@1: {}, R@5: {}, R@10: {} from {} finished from total {}".format(i, len(c), len(c5), len(c10), (i+1) * batch_size, dataset_length))                
-            
-            if i%10 == 0:
-                log.infov("{}/{}, margin-loss: {}".format(i, iter_length, loss))
-
+        
+        print(margin_mat)
+        # TODO
         acc = np.mean(np.diagonal(margin_mat))
         rank_list = []
         for i in range(dataset_length):
