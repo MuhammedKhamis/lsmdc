@@ -46,12 +46,12 @@ def main(argv):
     model_config = ModelConfig()
     train_config = TrainConfig()
 
-    drive_dir = '/content/drive/My Drive/Graduation Project/Output/checkpoint_lsmdc_InceptionResNet/'
-    base_dir =  os.path.join(drive_dir, train_config.train_tag + "_" + FLAGS.tag)
-    checkpoint_dir = os.path.join(base_dir,"model.ckpt")
-    logits_dir = os.path.join(base_dir,"logits_")
-    if not os.path.exists(base_dir):
-        os.mkdir(base_dir)
+    #drive_dir = '/content/drive/My Drive/Graduation Project/Output/checkpoint_lsmdc_InceptionResNet/'
+    #base_dir =  os.path.join(drive_dir, train_config.train_tag + "_" + FLAGS.tag)
+    #checkpoint_dir = os.path.join(base_dir,"model.ckpt")
+    #logits_dir = os.path.join(base_dir,"logits_")
+    #if not os.path.exists(base_dir):
+    #    os.mkdir(base_dir)
     #
     train_dataset = DatasetLSMDC(dataset_name='train',
                                  image_feature_net=model_config.image_feature_net,
@@ -94,7 +94,7 @@ def main(argv):
     if train_config.train_tag == 'RET':
         #val_queue = BatchQueue(validation_dataset.batch_tile(20*train_config.num_epochs, model_config.batch_size), name='validation')
         test_queue = BatchQueue(test_dataset.batch_tile(1, model_config.batch_size), name='test')
-    else:
+    #else:
         #val_iter = validation_dataset.batch_iter(20*train_config.num_epochs, model_config.batch_size, shuffle=False)
         #val_queue = BatchQueue(val_iter, name='validation')
     #train_queue.start_threads()
@@ -114,9 +114,6 @@ def main(argv):
         model.build_model(**model.get_placeholder())
         trainer = MODEL_TRAINERS[train_config.train_tag](train_config, model, session)
 
-
-        steps_in_epoch = int(np.ceil(len(train_dataset) / model.batch_size))
-
         saver = tf.train.Saver(max_to_keep=10)
 
         if train_config.load_from_ckpt is not None:
@@ -127,6 +124,7 @@ def main(argv):
             session.run(tf.global_variables_initializer())
 
         if not train_config.test_flag:
+            steps_in_epoch = int(np.ceil(len(train_dataset) / model.batch_size))
             for step in range(train_config.max_steps):
                 skip = False
                 if step <= train_config.last_step_taken :
@@ -150,6 +148,7 @@ def main(argv):
                         saver.save(session, checkpoint_dir, global_step=step)
         else:
             #trainer.evaluate(queue=val_queue, dataset=validation_dataset, global_step=step, generate_results=True, tag=FLAGS.tag)
+            print('Start Testing')
             trainer.test(queue=test_queue, dataset=test_dataset)
 
 if __name__ == '__main__':

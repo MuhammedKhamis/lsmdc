@@ -454,6 +454,8 @@ class RETTrainer(object):
     def test(self, queue, dataset):
         log.info("Testing Phase")
         batch_size = self.model.batch_size
+        print('batch size = ', batch_size)
+
         dataset_length = len(dataset)
         iter_num = int(dataset_length/batch_size)
         results = []
@@ -475,11 +477,14 @@ class RETTrainer(object):
         # TODO
         acc = np.mean(np.diagonal(margin_mat))
         rank_list = []
+        print('score = ', margin_mat[:,0])
         for i in range(dataset_length):
-            col = -margin_mat[i,:]
+            col = -margin_mat[:,i]
+            # rank of each video     [10 11 0 1]
             order = col.argsort()
             ranks = order.argsort()
             rank_list.append(ranks[i])
+            
         c = [x for x in rank_list if x < 1]
         c5 = [x for x in rank_list if x < 5]
         c10 = [x for x in rank_list if x< 10]
