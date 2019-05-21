@@ -460,36 +460,16 @@ class RETTrainer(object):
         iter_num = int(dataset_length/batch_size)
         results = []
         iter_length = int(dataset_length / self.model.batch_size + 1)
-        scores = []
         margin_mat = np.zeros([dataset_length, dataset_length])
 
         print('Testing on {} videos'.format(dataset_length))
-        # intitalize
-        c = []
-        c5 = []
-        c10 = []
         for i in range(iter_num):
             for j in range(iter_num):
                 loss, logit, output_score  = self.test_single_step(queue)
                 margin_mat[i*batch_size:(i+1)*batch_size, j*batch_size:(j+1)*batch_size] = output_score  
         
-        print(margin_mat)
-        # TODO
-        acc = np.mean(np.diagonal(margin_mat))
-        rank_list = []
-        print('score = ', margin_mat[:,0])
-        for i in range(dataset_length):
-            col = -margin_mat[:,i]
-            # rank of each video     [10 11 0 1]
-            order = col.argsort()
-            ranks = order.argsort()
-            rank_list.append(ranks[i])
-            
-        c = [x for x in rank_list if x < 1]
-        c5 = [x for x in rank_list if x < 5]
-        c10 = [x for x in rank_list if x< 10]
-        medr = np.median(rank_list)
-        log.infov("[RET] R@1: {}, R@5: {}, R@10: {}, medr: {medr:.4f}".format(len(c), len(c5),
-            len(c10),medr = medr))
-        log.infov("[RET] total accuracy: {acc:.5f}".format(acc=np.sum(acc)))
+        print('Scores = ', margin_mat[:,0])
+        scores = margin_mat[:,0]
+        ranks = scores.argsort()
+        print('Ranks = ', ranks);
         print('Finished Testing on {} videos'.format(dataset_length))
