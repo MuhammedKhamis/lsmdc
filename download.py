@@ -17,8 +17,6 @@ def download_file_from_google_drive(id, destination):
         with open(destination, "wb") as f:
             for chunk in tqdm(response.iter_content(CHUNK_SIZE)):
                 total_downloaded += 1
-                if total_downloaded % 1024 == 0:
-                    # print 'Total = {} KB and {} MB'.format(total_downloaded * 32, total_downloaded * 32 / 1024)
                 if chunk:  # filter out keep-alive new chunks
                     f.write(chunk)
 
