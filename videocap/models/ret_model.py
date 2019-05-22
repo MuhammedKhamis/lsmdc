@@ -473,3 +473,4 @@ class RETTrainer(object):
         ranks = scores.argsort()
         print('Ranks = ', ranks);
         print('Finished Testing on {} videos'.format(dataset_length))
+        return ranks

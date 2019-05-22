@@ -149,7 +149,11 @@ def main(argv):
         else:
             #trainer.evaluate(queue=val_queue, dataset=validation_dataset, global_step=step, generate_results=True, tag=FLAGS.tag)
             print('Start Testing')
-            trainer.test(queue=test_queue, dataset=test_dataset)
+            ranks = trainer.test(queue=test_queue, dataset=test_dataset)
+            output_file = open('output_file', 'w')
+            lines = ['{} \n'.format(i) for i in ranks]
+            output_file.writelines(output_file)
+            close(output_file)
 
 if __name__ == '__main__':
     tf.app.run(main=main)
