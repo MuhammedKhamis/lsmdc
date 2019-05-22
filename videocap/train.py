@@ -150,10 +150,12 @@ def main(argv):
             #trainer.evaluate(queue=val_queue, dataset=validation_dataset, global_step=step, generate_results=True, tag=FLAGS.tag)
             print('Start Testing')
             ranks = trainer.test(queue=test_queue, dataset=test_dataset)
-            output_file = open('output_file', 'w')
+            output_file = open('video_ranks.txt', 'w')
             lines = ['{} \n'.format(i) for i in ranks]
-            output_file.writelines(output_file)
+            output_file.writelines(lines)
             close(output_file)
+            print('Finished Testing')
+
 
 if __name__ == '__main__':
     tf.app.run(main=main)
