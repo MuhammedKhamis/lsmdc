@@ -46,12 +46,12 @@ def main(argv):
     model_config = ModelConfig()
     train_config = TrainConfig()
 
-    #drive_dir = '/content/drive/My Drive/Graduation Project/Output/checkpoint_lsmdc_InceptionResNet/'
-    #base_dir =  os.path.join(drive_dir, train_config.train_tag + "_" + FLAGS.tag)
-    #checkpoint_dir = os.path.join(base_dir,"model.ckpt")
-    #logits_dir = os.path.join(base_dir,"logits_")
-    #if not os.path.exists(base_dir):
-    #    os.mkdir(base_dir)
+    drive_dir = '/content/drive/My Drive/Graduation Project/Output/checkpoint_lsmdc_InceptionResNet/'
+    base_dir =  os.path.join(drive_dir, train_config.train_tag + "_" + FLAGS.tag)
+    checkpoint_dir = os.path.join(base_dir,"model.ckpt")
+    logits_dir = os.path.join(base_dir,"logits_")
+    if not os.path.exists(base_dir):
+        os.mkdir(base_dir)
     #
     train_dataset = DatasetLSMDC(dataset_name='train',
                                  image_feature_net=model_config.image_feature_net,
@@ -71,35 +71,19 @@ def main(argv):
                                       data_type=train_config.train_tag,
                                       attr_length=model_config.attr_length,
                                       wav_data = model_config.wav_data)
-    
-    test_dataset = DatasetLSMDC(dataset_name='test',
-                                      image_feature_net=model_config.image_feature_net,
-                                      layer=model_config.layer,
-                                      max_length=model_config.caption_length,
-                                      max_vid_length = model_config.video_steps,
-                                      max_n_videos=None,
-                                      data_type=train_config.train_tag,
-                                      attr_length=model_config.attr_length,
-                                      wav_data = model_config.wav_data)
-
     train_dataset.build_word_vocabulary()
     validation_dataset.share_word_vocabulary_from(train_dataset)
-    test_dataset.share_word_vocabulary_from(train_dataset)
-    
     if train_config.train_tag == 'RET':
         model_config.batch_size = model_config.ret_batch_size
-    
-    #train_iter = train_dataset.batch_iter(train_config.num_epochs, model_config.batch_size)
-    #train_queue = BatchQueue(train_iter, name='train')
+    train_iter = train_dataset.batch_iter(train_config.num_epochs, model_config.batch_size)
+    train_queue = BatchQueue(train_iter, name='train')
     if train_config.train_tag == 'RET':
-        #val_queue = BatchQueue(validation_dataset.batch_tile(20*train_config.num_epochs, model_config.batch_size), name='validation')
-        test_queue = BatchQueue(test_dataset.batch_tile(1, model_config.batch_size), name='test')
-    #else:
-        #val_iter = validation_dataset.batch_iter(20*train_config.num_epochs, model_config.batch_size, shuffle=False)
-        #val_queue = BatchQueue(val_iter, name='validation')
-    #train_queue.start_threads()
-    #val_queue.start_threads()
-    test_queue.start_threads()
+        val_queue = BatchQueue(validation_dataset.batch_tile(20*train_config.num_epochs, model_config.batch_size), name='validation')
+    else:
+        val_iter = validation_dataset.batch_iter(20*train_config.num_epochs, model_config.batch_size, shuffle=False)
+        val_queue = BatchQueue(val_iter, name='validation')
+    train_queue.start_threads()
+    val_queue.start_threads()
 
     g = tf.Graph()
     with g.as_default():
@@ -114,7 +98,11 @@ def main(argv):
         model.build_model(**model.get_placeholder())
         trainer = MODEL_TRAINERS[train_config.train_tag](train_config, model, session)
 
+
+        steps_in_epoch = int(np.ceil(len(train_dataset) / model.batch_size))
+
         saver = tf.train.Saver(max_to_keep=10)
+
 
         if train_config.load_from_ckpt is not None:
             log.info("Restoring parameter from {}".format(train_config.load_from_ckpt))
@@ -122,40 +110,36 @@ def main(argv):
             saver.restore(session, train_config.load_from_ckpt)
         else:
             session.run(tf.global_variables_initializer())
+        for step in range(train_config.max_steps):
+            skip = False
+            if step <= train_config.last_step_taken :
+                skip = True
 
-        if not train_config.test_flag:
-            steps_in_epoch = int(np.ceil(len(train_dataset) / model.batch_size))
-            for step in range(train_config.max_steps):
-                skip = False
-                if step <= train_config.last_step_taken :
-                    skip = True
+            if step % 1000 == 0:
+                print("Before Run single step = " , step)
+            step_result = trainer.run_single_step(skip, queue=train_queue, is_train=True)
+            if step % 1000 == 0:
+                print("After Run single step = " , step)
+            
+            if not skip:
+                if step % train_config.steps_per_logging == 0:
+                    step_result['steps_in_epoch'] = steps_in_epoch
+                    trainer.log_step_message(**step_result)
 
-                if step % 1000 == 0:
-                    print("Before Run single step = " , step)
-                step_result = trainer.run_single_step(skip, queue=train_queue, is_train=True)
-                if step % 1000 == 0:
-                    print("After Run single step = " , step)
-                
-                if not skip:
-                    if step_result['current_step'] % train_config.steps_per_logging == 0:
-                        step_result['steps_in_epoch'] = steps_in_epoch
-                        trainer.log_step_message(**step_result)
-
-                    if step_result['current_step'] % train_config.steps_per_evaluate == 0 or train_config.print_evaluate:
-                        trainer.evaluate(queue=val_queue, dataset=validation_dataset, global_step=step, generate_results=True, tag=FLAGS.tag)
-
+                if step % train_config.steps_per_evaluate == 0 or train_config.print_evaluate:
+                    trainer.evaluate(queue=val_queue, dataset=validation_dataset, global_step=step, generate_results=True, tag=FLAGS.tag)
+                    if step % (2 * train_config.steps_per_evaluate) == 0:
                         print("SAVE MODEL"+FLAGS.tag)
                         saver.save(session, checkpoint_dir, global_step=step)
-        else:
-            #trainer.evaluate(queue=val_queue, dataset=validation_dataset, global_step=step, generate_results=True, tag=FLAGS.tag)
-            print('Start Testing')
-            ranks = trainer.test(queue=test_queue, dataset=test_dataset)
-            output_file = open('video_ranks.txt', 'w')
-            lines = ['{} \n'.format(i) for i in ranks]
-            output_file.writelines(lines)
-            close(output_file)
-            print('Finished Testing')
 
+                if step == train_config.max_steps - 1:
+                    trainer.evaluate(queue=val_queue, dataset=validation_dataset, global_step=step, generate_results=True, tag=FLAGS.tag)
+                    print("SAVE MODEL"+FLAGS.tag)
+                    saver.save(session, checkpoint_dir, global_step=step)
+                    print("Finished Epoch")
+
+        #train_queue.thread_close()
+        #val_queue.thread_close()
 
 if __name__ == '__main__':
     tf.app.run(main=main)

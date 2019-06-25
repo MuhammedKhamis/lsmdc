@@ -7,12 +7,22 @@ import tensorflow as tf
 __path__ = os.path.abspath(os.path.dirname(__file__))
 LSMDC_DATA_PATH = os.path.normpath(os.path.join(__path__, "../dataset/LSMDC"))
 
+"""
+we tried these changes:
+1- added squeeze links to the 3 conv layers in the fusion. (done)
+2. change the lstm_cell type which is used in both video embedding and caption embedding building. (TODO)
+3. change the hidden units of the lstm_cell. (TODO)
+4. change the value of self.dropout_keep_prob instead of 0.5 (TODO)
+5. change the learning rate from 0.0001 to 0.00001. (done)
+6. change the self.optimizer from 'Adam' to 'Adamax' and 'Nadam'. (TODO)
+7. change the num_layers from 1. (TODO)
+"""
 
 class ModelConfig(object):
 
     def __init__(self):
-        self.batch_size = 1
-        self.ret_batch_size = 1
+        self.batch_size = 16
+        self.ret_batch_size = 10
 
         self.video_height = 299
         self.video_width = 299
@@ -23,6 +33,7 @@ class ModelConfig(object):
 
         self.word_dim = 300
         self.num_layers = 1
+        # hidden dim = hidden units for the lstm cell for both video and caption
         self.hidden_dim = 512
         self.video_embedding_size = 1024
 
@@ -40,11 +51,11 @@ class ModelConfig(object):
 class TrainConfig(object):
 
     def __init__(self):
-        self.learning_rate = 0.0001
+        self.learning_rate = 0.00001
         self.train_dir = None
         # as dataset is 26052 video caption pair
-        self.max_steps = 26052
-        self.last_step_taken = 0
+        self.max_steps = 65130
+        self.last_step_taken = 15000
         self.num_epochs = 10
 
         self.learning_rate_decay_steps = 500000
@@ -53,10 +64,8 @@ class TrainConfig(object):
         self.max_grad_norm = 5.0
 
         self.steps_per_logging = 1000
-        self.steps_per_evaluate = 5000
+        self.steps_per_evaluate = 2500
         self.train_tag = 'RET'
 
-        self.load_from_ckpt = '/content/checkpoint/model.ckpt-26051'
+        self.load_from_ckpt = '/content/checkpoint/RET_/model.ckpt-15000'
         self.print_evaluate = False
-        self.test_flag = True
-

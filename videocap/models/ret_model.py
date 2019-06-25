@@ -7,8 +7,6 @@ import tensorflow as tf
 import numpy as np
 import time
 import math
-from random import randint
-
 
 from videocap.util import log
 import tensorflow.contrib.slim as slim
@@ -102,7 +100,7 @@ class RETGenerator(object):
                     input_gate = tf.sigmoid(input_gate)
                     outputs =  tf.multiply(input_pass, input_gate)
                     outputs = tf.concat([outputs,video],axis = 2)
-        if feat_type== 'rnn':
+        if feat_type == 'rnn':
             with tf.variable_scope("video_rnn", initializer=self.initializer, reuse=reuse_variable) as scope:
                 video_pool = []
                 for i in range(self.config.video_steps):
@@ -180,19 +178,46 @@ class RETGenerator(object):
                             #normalizer_params=self.bn_params,
                             reuse = reuse):
 
+            # Conv1
             conv1 = slim.conv2d(output1,256,[3,3],padding="Valid",scope='conv1',activation_fn=tf.nn.leaky_relu)
+            # added
+            ratio = 4
+            average_conv1 = slim.avg_pool2d(conv1, [conv1.shape[1], conv1.shape[2]])
+            fc1_conv1 = slim.fully_connected(average_conv1, int(256 / ratio), activation_fn=tf.nn.leaky_relu, scope='conv1_fc1', reuse=tf.AUTO_REUSE)
+            fc2_conv1 = slim.fully_connected(fc1_conv1, 256, activation_fn=tf.nn.sigmoid, scope='conv1_fc2', reuse=tf.AUTO_REUSE)
+            fc2_conv1 = tf.reshape(fc2_conv1, [-1,1,1,256])
+            conv1 = conv1 * fc2_conv1
+
             convalp1 = slim.conv2d(output1,1,[3,3],padding="Valid",scope='conv1alp',activation_fn=tf.nn.sigmoid)
             input_gate2 = convalp1
             output2 = tf.multiply(conv1,input_gate2)
             output2 = tf.multiply(tf.multiply(output2, tf.expand_dims(tf.expand_dims(tf.expand_dims(self.video_mask_list[0][iii],0),2),3)), tf.expand_dims(tf.expand_dims(self.caption_mask_list[0],1),3))
 
+            #Conv2
             conv2 = slim.conv2d(output2,256,[3,3],padding="Valid",scope='conv2',activation_fn=tf.nn.leaky_relu)
+            # added
+            ratio = 4
+            average_conv2 = slim.avg_pool2d(conv2, [conv2.shape[1], conv2.shape[2]])
+            fc1_conv2 = slim.fully_connected(average_conv2, int(256 / ratio), activation_fn=tf.nn.leaky_relu, scope='conv2_fc1', reuse=tf.AUTO_REUSE)
+            fc2_conv2 = slim.fully_connected(fc1_conv2, 256, activation_fn=tf.nn.sigmoid, scope='conv2_fc2', reuse=tf.AUTO_REUSE)
+            fc2_conv2 = tf.reshape(fc2_conv2, [-1,1,1,256])
+            conv2 = conv2 * fc2_conv2
+
             convalp2 = slim.conv2d(output2,1,[3,3],padding="Valid",scope='conv2alp',activation_fn=tf.nn.sigmoid)
             input_gate3 = convalp2
             output3 = tf.multiply(conv2,input_gate3)
             output3 = tf.multiply(tf.multiply(output3, tf.expand_dims(tf.expand_dims(tf.expand_dims(self.video_mask_list[1][iii],0),2),3)), tf.expand_dims(tf.expand_dims(self.caption_mask_list[1],1),3))
 
+            #Conv3
             conv3 = slim.conv2d(output3,256,[3,3],[2,2],padding="Valid",scope='conv3',activation_fn=tf.nn.leaky_relu)
+            # added
+            ratio = 4
+            average_conv3 = slim.avg_pool2d(conv3, [conv3.shape[1], conv3.shape[2]])
+            fc1_conv3 = slim.fully_connected(average_conv3, int(256 / ratio), activation_fn=tf.nn.leaky_relu, scope='conv3_fc1', reuse=tf.AUTO_REUSE)
+            fc2_conv3 = slim.fully_connected(fc1_conv3, 256, activation_fn=tf.nn.sigmoid, scope='conv3_fc2', reuse=tf.AUTO_REUSE)
+            fc2_conv3 = tf.reshape(fc2_conv3, [-1,1,1,256])
+            conv3 = conv3 * fc2_conv3
+
             convalp3 = slim.conv2d(output3,1,[3,3],[2,2],padding="Valid",scope='conv3alp',activation_fn=tf.nn.sigmoid)
             input_gate4 = convalp3
             output4 = tf.multiply(conv3,input_gate4)
@@ -240,7 +265,7 @@ class RETGenerator(object):
         #Batch normalization
         self.bn_fn = slim.batch_norm
         self.bn_params = {'is_training':self.train_flag}
-
+        
 
         self.word_embed_t = tf.Variable(self.word_embed, dtype=tf.float32, name="word_embed", trainable=True)
         #video drop
@@ -436,41 +461,6 @@ class RETTrainer(object):
         log.infov("[RET] total accuracy: {acc:.5f}".format(acc=np.sum(acc)))
 
         if generate_results:
-            with open('./checkpoint/evaluate_log.tsv', 'a') as f:
+            drive_dir = '/content/drive/My Drive/Graduation Project/Output/checkpoint_lsmdc_InceptionResNet/'
+            with open(drive_dir + 'evaluate_log.tsv', 'a') as f:
                 f.write('[RET] Step [{}]\t, R@1: {}\t, R@5: {}\t, R@10: {}\t, medr: {}\t, acc: {}\n'.format(global_step, len(c), len(c5), len(c10), medr, np.sum(acc)))
-
-
-    def test_single_step(self, test_queue):
-        batch_chunk = test_queue.get_inputs()
-        feed_dict = self.model.get_feed_dict(batch_chunk)
-        feed_dict[self.model.train_flag] = False
-        feed_dict[self.model.dropout_keep_prob] = 1.0
-        loss,output_score, logit = self.sess.run([self.model.mean_loss,
-                                                               self.model.scores,
-                                                               self.model.logit],
-                                                               feed_dict=feed_dict)
-        return [loss, output_score, logit]
-
-    def test(self, queue, dataset):
-        log.info("Testing Phase")
-        batch_size = self.model.batch_size
-        print('batch size = ', batch_size)
-
-        dataset_length = len(dataset)
-        iter_num = int(dataset_length/batch_size)
-        results = []
-        iter_length = int(dataset_length / self.model.batch_size + 1)
-        margin_mat = np.zeros([dataset_length, dataset_length])
-
-        print('Testing on {} videos'.format(dataset_length))
-        for i in range(iter_num):
-            for j in range(iter_num):
-                loss, logit, output_score  = self.test_single_step(queue)
-                margin_mat[i*batch_size:(i+1)*batch_size, j*batch_size:(j+1)*batch_size] = output_score  
-        
-        print('Scores = ', margin_mat[:,0])
-        scores = margin_mat[:,0]
-        ranks = scores.argsort()
-        print('Ranks = ', ranks);
-        print('Finished Testing on {} videos'.format(dataset_length))
-        return ranks

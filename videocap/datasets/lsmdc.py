@@ -61,19 +61,14 @@ class DatasetLSMDC():
         self.data_type = data_type
         self.wav_data = wav_data
         self.more_data = more_data
-       
+        self.data_df = self.read_df_from_csvfile()
 
-        if dataset_name == 'test':
-            self.data_df = self.read_df_from_csvfile()
+        if max_n_videos is not None:
+            self.data_df = self.data_df[:max_n_videos]
+        self.ids = list(self.data_df.index)
 
-            if max_n_videos is not None:
-                self.data_df = self.data_df[:max_n_videos]
-            self.ids = list(self.data_df.index)
+        self.feat_h5 = self.read_feat_from_hdf5()
 
-            self.feat_h5 = self.read_feat_from_hdf5()
-        else:
-            print('Skipped {}'.format(dataset_name))
-            
     def __del__(self):
         self.feat_h5.close()
 
@@ -84,13 +79,6 @@ class DatasetLSMDC():
         return len(self.data_df)
 
     def read_feat_from_hdf5(self):
-
-        if self.dataset_name == 'test':
-            # load test hdf5
-            feature_file = os.path.join(VIDEO_FEATURE_DIR, self.image_feature_net.upper()
-                                            + "_" + self.layer.lower() + "test.hdf5")
-            return h5py.File(feature_file, 'r')
-
         if self.image_feature_net.lower() == 'resnet':
             if self.layer.lower() == 'pool5':
                 if self.wav_data:
@@ -119,7 +107,7 @@ class DatasetLSMDC():
         #train_cap_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_CAP_train.csv')
         val_data_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_'+self.data_type+'_val.csv')
         #val_cap_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_CAP_val.csv')
-        test_data_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_'+self.data_type+'_test.csv')
+        #test_data_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_'+self.data_type+'_test.csv')
         #test_cap_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_CAP_test.csv')
         #blind_data_path = os.path.join(DATAFRAME_DIR, 'LSMDC16_'+self.data_type+'_blindtest.csv')
         #par_cap_path = os.path.join(DATAFRAME_DIR, 'Paraphrase_CAP_train.csv')
